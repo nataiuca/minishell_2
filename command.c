@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:27:25 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 21:14:51 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 22:11:58 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,14 +163,14 @@ void runcmd(struct cmd *cmd, t_minishell *minishell) {
                 close(rcmd->fd);
                 if (rcmd->mode == O_RDONLY) {
                     if (open(rcmd->file, rcmd->mode) < 0) {
-                        ft_putstr_fd("open failed ", 2);
+                        ft_putstr_fd("zsh: no such file or directory: ", 2);
                         ft_putstr_fd(rcmd->file, 2);
                         ft_putchar_fd('\n', 2);
                         exit(1);
                     }
                 } else {
                     if (open(rcmd->file, rcmd->mode, rcmd->right) < 0) {
-                        ft_putstr_fd("open failed ", 2);
+                        ft_putstr_fd("zsh: no such file or directory: ", 2);
                         ft_putstr_fd(rcmd->file, 2);
                         ft_putchar_fd('\n', 2);
                         exit(1);
