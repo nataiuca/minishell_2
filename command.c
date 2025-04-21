@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:27:25 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 22:11:58 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 23:53:28 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,15 +162,28 @@ void runcmd(struct cmd *cmd, t_minishell *minishell) {
                 // Procesa redirección normal de archivo
                 close(rcmd->fd);
                 if (rcmd->mode == O_RDONLY) {
-                    if (open(rcmd->file, rcmd->mode) < 0) {
-                        ft_putstr_fd("zsh: no such file or directory: ", 2);
+                    int fd = open(rcmd->file, rcmd->mode);
+                    if (fd < 0) {
+                        if (errno == EACCES)
+                            ft_putstr_fd("zsh: permission denied: ", 2);
+                        else if (errno == ENOENT)
+                            ft_putstr_fd("zsh: no such file or directory: ", 2);
+                        else
+                            ft_putstr_fd("zsh: permission denied: ", 2);
                         ft_putstr_fd(rcmd->file, 2);
                         ft_putchar_fd('\n', 2);
                         exit(1);
                     }
+                    // Aquí podrías duplicar fd si fuese necesario, dependiendo de cómo manejes la redirección.
                 } else {
-                    if (open(rcmd->file, rcmd->mode, rcmd->right) < 0) {
-                        ft_putstr_fd("zsh: no such file or directory: ", 2);
+                    int fd = open(rcmd->file, rcmd->mode, rcmd->right);
+                    if (fd < 0) {
+                        if (errno == EACCES)
+                            ft_putstr_fd("zsh: permission denied: ", 2);
+                        else if (errno == ENOENT)
+                            ft_putstr_fd("zsh: no such file or directory: ", 2);
+                        else
+                            ft_putstr_fd("zsh: permission denied: ", 2);
                         ft_putstr_fd(rcmd->file, 2);
                         ft_putchar_fd('\n', 2);
                         exit(1);
@@ -186,16 +199,16 @@ void runcmd(struct cmd *cmd, t_minishell *minishell) {
                 panic("pipe error");
             
             if ((pid1 = fork()) == 0) {
-                // Proceso hijo izquierdo
-                dup2(p[1], 1);  // Redirige STDOUT al extremo de escritura del pipe
+                // Proceso hijo izquierdo: redirige STDOUT al extremo de escritura del pipe
+                dup2(p[1], 1);
                 close(p[0]);
                 close(p[1]);
                 runcmd(pcmd->left, minishell);
             }
             
             if ((pid2 = fork()) == 0) {
-                // Proceso hijo derecho
-                dup2(p[0], 0);  // Redirige STDIN al extremo de lectura del pipe
+                // Proceso hijo derecho: redirige STDIN al extremo de lectura del pipe
+                dup2(p[0], 0);
                 close(p[0]);
                 close(p[1]);
                 runcmd(pcmd->right, minishell);
