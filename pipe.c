@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:31:57 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/19 20:55:51 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:12:43 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,22 +24,31 @@ struct cmd* pipecmd(struct cmd *left, struct cmd *right) {
 
 struct cmd* parsepipe(char **ps, char *es) {
     struct cmd *cmd;
+
     // Parseamos el comando del lado izquierdo
     cmd = parseexec(ps, es);
-    if (!cmd)  // O si detectas que el comando está vacío
+    if (!cmd)
         panic("syntax: missing command before pipe");
 
     // Si hay un pipe...
     if (peek(ps, es, "|")) {
         gettoken(ps, es, 0, 0);  // Descarta el token del pipe
+
+        // 👇 Comprobamos si lo siguiente también es un pipe o fin de entrada
+        if (peek(ps, es, "|") || *ps == es) {
+            ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+            return NULL;
+        }
+
         struct cmd *right = parsepipe(ps, es);
-        if (!right)
-            panic("syntax: missing command after pipe");
+        if (!right) {
+            ft_putstr_fd("minishell: syntax error after pipe\n", 2);
+            return NULL;
+        }
         cmd = pipecmd(cmd, right);
     }
     return cmd;
 }
-
 
 struct cmd* parseline(char **ps, char *es)
 {

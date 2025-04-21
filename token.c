@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:25:10 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/19 20:40:00 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:09:51 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ int gettoken(char **ps, char *es, char **q, char **eq) {
             break;
         default:
             ret = 'a';
-            while (s < es && !ft_strchr(whitespace, *s) && !ft_strchr("|&;()<>", *s))
+            while (s < es && !ft_strchr(whitespace, *s) && !ft_strchr("|&()<>", *s))
                 s++;
             break;
     }

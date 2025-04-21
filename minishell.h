@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 18:21:09 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/20 00:04:30 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 16:42:21 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void safe_pipe(int *pipefd);
 
 // interactive
 void	catch_signal(void);
-void catch_interactive(t_history *hist, char *input, char *prompt);
+void catch_interactive(char *input, char *prompt);
 void	save_history(char *input);
 char	*check_input_valid(char *input);
 

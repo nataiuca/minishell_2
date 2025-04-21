@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 22:34:17 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 20:39:03 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:15:39 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,10 @@ int main(int argc, char **argv, char **envp)
         // Parseamos el comando
         input = check_input_valid(input);
         cmd = parsecmd(input);
+		if (!cmd) {
+			free(input);
+			continue; 
+		}
 
         // Detectar y ejecutar builtins directamente en el proceso principal
         if (valid_builtins(cmd)) {

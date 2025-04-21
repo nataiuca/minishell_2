@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:27:25 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/19 20:02:18 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:14:51 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,8 @@ struct cmd *parsecmd(char *s)
 
   es = s + strlen(s);                 // es = end of string
   cmd = parseline(&s, es); // s = start of all the string
+  if (!cmd)
+        return NULL;
   peek(&s, es, "");
   if (s != es)
   {
