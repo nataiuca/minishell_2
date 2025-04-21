@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 22:34:17 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 21:15:39 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/21 21:36:35 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,26 +15,27 @@
 int main(int argc, char **argv, char **envp)
 {
     t_minishell minishell;
-    char        *input;
-    char        *line;
-    struct cmd  *cmd;
+    char *input;
+    char *line;
+    struct cmd *cmd;
+    int status;
+    pid_t pid;
 
-    // Inicializamos y configuramos el minishell
+    /* Inicializamos y configuramos el minishell */
     prepare_minishell(&minishell);
     valid_inital_param(argc, envp, &minishell);
     catch_signal();
 
-    // Inicializamos el historial
+    /* Inicializamos el historial */
     minishell.history = history_create();
     load_history_file(minishell.history, ".minishell_history");
 
     while (1)
     {
-        // Leemos la entrada según el tipo de flujo (interactivo o no)
+        /* Leemos la entrada según el tipo de flujo (interactivo o no) */
         if (isatty(fileno(stdin)))
             line = readline("minishell$ ");
-        else
-        {
+        else {
             line = get_next_line(fileno(stdin));
             if (!line)
                 break;
@@ -42,19 +43,19 @@ int main(int argc, char **argv, char **envp)
             free(line);
         }
 
-        // Si la entrada es NULL, salimos
-        if (!line) {
+        if (!line)
+        {
             printf("exit\n");
             save_history_file(minishell.history, ".minishell_history", 1000);
             history_free(minishell.history);
             break;
         }
 
-        // Procesamos el input inicial y verificamos comandos incompletos
         input = ft_strdup(line);
         free(line);
 
-        while (incomplete_cmd(input)) {
+        while (incomplete_cmd(input))
+        {
             line = readline("pipe> ");
             if (!line)
                 break;
@@ -64,17 +65,20 @@ int main(int argc, char **argv, char **envp)
             input = tmp;
         }
 
-        // Si el input está vacío, pasamos al siguiente ciclo
-        if (input[0] == '\0') {
+        if (input[0] == '\0')
+        {
             free(input);
             continue;
         }
 
-        // Manejo de historial
-        if (strncmp(input, "history", 7) != 0) {
+        /* Manejo del historial */
+        if (strncmp(input, "history", 7) != 0)
+        {
             add_history(input);
             history_add(minishell.history, input);
-        } else {
+        }
+        else
+        {
             char *arg = input + 7;
             while (*arg && ft_isspace((unsigned char)*arg))
                 arg++;
@@ -86,29 +90,38 @@ int main(int argc, char **argv, char **envp)
             continue;
         }
 
-        // Parseamos el comando
+        /* Parseamos el comando */
         input = check_input_valid(input);
         cmd = parsecmd(input);
-		if (!cmd) {
-			free(input);
-			continue; 
-		}
+        if (!cmd)
+        {
+            free(input);
+            continue;
+        }
 
-        // Detectar y ejecutar builtins directamente en el proceso principal
-        if (valid_builtins(cmd)) {
+        /* Ejecutamos el comando: si es builtin se ejecuta internamente, sino se hace fork */
+        if (valid_builtins(cmd))
+        {
             run_internal(cmd, &minishell);
-        } else {
-            // Para comandos no builtins, hacemos fork y ejecutamos runcmd
-            if (fork() == 0) {
+        }
+        else
+        {
+            pid = fork();
+            if (pid == 0)
+            {
+                /* Proceso hijo: ejecutar el comando mediante runcmd() */
                 runcmd(cmd, &minishell);
                 exit(0);
             }
-            wait(NULL);
+            /* Proceso padre: esperar y capturar el estado de salida */
+            waitpid(pid, &status, 0);
+            if (WIFEXITED(status))
+                minishell.status = WEXITSTATUS(status);
         }
 
-        // Liberar memoria y pasar al siguiente ciclo
         free(input);
     }
+
     safe_free_minishell(&minishell);
     return 0;
 }
