@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:29:04 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 22:07:51 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/22 00:58:19 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ struct cmd* parseredirs(struct cmd *cmd, char **ps, char *es) {
         tok = gettoken(ps, es, &q, &eq);
         if (tok == HDOC) {
             if (gettoken(ps, es, &q, &eq) != 'a')
-                panic("Falta delimitador para heredoc");
+                panic("The delimiter is missing for the heredoc");
             // Si ya habíamos leído un heredoc, lo liberamos (se descarta)
             if (last_hdoc) {
                 free(last_hdoc);
@@ -49,7 +49,7 @@ struct cmd* parseredirs(struct cmd *cmd, char **ps, char *es) {
             last_hdoc = process_heredoc(q, eq);
         } else {
             if (gettoken(ps, es, &q, &eq) != 'a')
-                panic("zsh: parse error near `\\n`");
+                panic("minishell: parse error near `\\n`");
             switch (tok) {
                 case '<':
                     cmd = redircmd(cmd, q, eq, O_RDONLY, 0, 0, NULL);

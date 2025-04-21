@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 21:27:25 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 23:53:28 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/22 01:20:47 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,26 +115,24 @@ struct cmd *parsecmd(char *s)
   return cmd;
 }
 
-// Execute cmd.  Never returns.
 void runcmd(struct cmd *cmd, t_minishell *minishell) {
     int p[2];
     struct execcmd *ecmd;
     struct redircmd *rcmd;
     struct pipecmd *pcmd;
     pid_t pid1, pid2;
-    
+
     if (cmd == 0)
         exit(0);
-    
+
     switch (cmd->type) {
         default:
             panic("runcmd: comando desconocido");
             break;
-            
+
         case EXEC:
             ecmd = (struct execcmd *)cmd;
             valid_command(ecmd, minishell);
-            /* Aquí se puede ejecutar el comando, ya sea built-in o mediante execve */
             if (ecmd->argv[0] == 0)
                 exit(0);
             if (valid_builtins(cmd)) {
@@ -146,79 +144,74 @@ void runcmd(struct cmd *cmd, t_minishell *minishell) {
                 ft_putchar_fd('\n', 2);
             }
             break;
-            
-        case REDIR:
-            rcmd = (struct redircmd *)cmd;
-            if (rcmd->hdoc) {
-                // Si se usa heredoc, creamos un pipe para enviar el contenido
-                int heredoc_pipe[2];
-                if (pipe(heredoc_pipe) < 0)
-                    panic("Error al crear pipe para heredoc");
-                write(heredoc_pipe[1], rcmd->hdoc, ft_strlen(rcmd->hdoc));
-                close(heredoc_pipe[1]);
-                dup2(heredoc_pipe[0], 0);
-                close(heredoc_pipe[0]);
-            } else {
-                // Procesa redirección normal de archivo
-                close(rcmd->fd);
-                if (rcmd->mode == O_RDONLY) {
-                    int fd = open(rcmd->file, rcmd->mode);
-                    if (fd < 0) {
-                        if (errno == EACCES)
-                            ft_putstr_fd("zsh: permission denied: ", 2);
-                        else if (errno == ENOENT)
-                            ft_putstr_fd("zsh: no such file or directory: ", 2);
-                        else
-                            ft_putstr_fd("zsh: permission denied: ", 2);
-                        ft_putstr_fd(rcmd->file, 2);
-                        ft_putchar_fd('\n', 2);
-                        exit(1);
-                    }
-                    // Aquí podrías duplicar fd si fuese necesario, dependiendo de cómo manejes la redirección.
-                } else {
-                    int fd = open(rcmd->file, rcmd->mode, rcmd->right);
-                    if (fd < 0) {
-                        if (errno == EACCES)
-                            ft_putstr_fd("zsh: permission denied: ", 2);
-                        else if (errno == ENOENT)
-                            ft_putstr_fd("zsh: no such file or directory: ", 2);
-                        else
-                            ft_putstr_fd("zsh: permission denied: ", 2);
-                        ft_putstr_fd(rcmd->file, 2);
-                        ft_putchar_fd('\n', 2);
-                        exit(1);
-                    }
-                }
-            }
-            runcmd(rcmd->cmd, minishell);
-            break;
-            
+
+			case REDIR:
+			rcmd = (struct redircmd *)cmd;
+			{
+				int fd;
+		
+				if (rcmd->hdoc) {
+					int heredoc_pipe[2];
+					if (pipe(heredoc_pipe) < 0)
+						panic("Error al crear pipe heredoc");
+					write(heredoc_pipe[1], rcmd->hdoc, ft_strlen(rcmd->hdoc));
+					close(heredoc_pipe[1]);
+					dup2(heredoc_pipe[0], 0);
+					close(heredoc_pipe[0]);
+				} else {
+					errno = 0; // reset before open
+					if (rcmd->mode == O_RDONLY)
+						fd = open(rcmd->file, O_RDONLY);
+					else
+						fd = open(rcmd->file, rcmd->mode, rcmd->right);
+		
+					if (fd < 0) {
+						// asegurar que errno no cambie antes de imprimir
+						int saved_errno = errno;
+						errno = saved_errno; // innecesario pero explícito
+						print_redir_error(rcmd->file);
+						exit(1);
+					}
+		
+					if (dup2(fd, rcmd->fd) < 0) {
+						perror("dup2 failed");
+						close(fd);
+						exit(1);
+					}
+		
+					close(fd);
+				}
+			}
+		
+			runcmd(rcmd->cmd, minishell);
+			break;
+		
         case PIPE:
             pcmd = (struct pipecmd *)cmd;
             if (pipe(p) < 0)
                 panic("pipe error");
-            
+
             if ((pid1 = fork()) == 0) {
-                // Proceso hijo izquierdo: redirige STDOUT al extremo de escritura del pipe
                 dup2(p[1], 1);
                 close(p[0]);
                 close(p[1]);
                 runcmd(pcmd->left, minishell);
             }
-            
+
             if ((pid2 = fork()) == 0) {
-                // Proceso hijo derecho: redirige STDIN al extremo de lectura del pipe
                 dup2(p[0], 0);
                 close(p[0]);
                 close(p[1]);
                 runcmd(pcmd->right, minishell);
             }
+
             close(p[0]);
             close(p[1]);
             waitpid(pid1, NULL, 0);
             waitpid(pid2, NULL, 0);
             break;
     }
+
     exit(0);
 }
 

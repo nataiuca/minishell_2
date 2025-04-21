@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   str_util.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgamarra <jgamarra@student.42madrid.com>   +#+  +:+       +#+        */
+/*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 19:14:24 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/03/16 13:10:08 by jgamarra         ###   ########.fr       */
+/*   Updated: 2025/04/22 01:25:43 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,4 +111,22 @@ bool valid_quotes(char *input, char quote)
 	if (count % 2 == 0)
 		return (true);
 	return (false);
+}
+
+void print_redir_error(char *file) {
+    struct stat st;
+
+    // Detectar si es un directorio
+    if (stat(file, &st) == 0 && S_ISDIR(st.st_mode)) {
+        ft_putstr_fd("minishell: Is a directory: ", 2);
+    } else if (errno == EACCES) {
+        ft_putstr_fd("minishell: Permission denied: ", 2);
+    } else if (errno == ENOENT) {
+        ft_putstr_fd("minishell: No such file or directory: ", 2);
+    } else {
+        ft_putstr_fd("minishell: Permission denied: ", 2);
+    }
+
+    ft_putstr_fd(file, 2);
+    ft_putchar_fd('\n', 2);
 }

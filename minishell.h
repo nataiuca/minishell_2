@@ -6,7 +6,7 @@
 /*   By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 18:21:09 by jgamarra          #+#    #+#             */
-/*   Updated: 2025/04/21 16:42:21 by natferna         ###   ########.fr       */
+/*   Updated: 2025/04/22 01:23:02 by natferna         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include <readline/history.h>
 # include <errno.h>
 # include <signal.h>
+#include <sys/stat.h> 
 // LINUX
 // # include <linux/limits.h> 
 // MAC
@@ -168,6 +169,7 @@ int ft_strcountchr(char *str, char chr);
 char	*trim_space_char(char *input);
 char *ft_strreplace(char *str, char *old, char *new);
 bool valid_quotes(char *input, char quote);
+void print_redir_error(char *file);
 
 // token.c
 int	gettoken(char **ps, char *es, char **q, char **eq);
