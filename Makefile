@@ -1,49 +1,62 @@
-LIBFT_NAME := libft.a
-LIBFT_GH := https://github.com/josejpgg/libft_increment.git
-LIBFT_PATH := ./lib/libft/
-PROGRAM_NAME := minishell
-CC = cc
-FLAGS = 
-# FLAGS = -Wall -Werror -Wextra
-SOURCE := main.c env.c param.c expand.c\
-safe_func.c interactive.c safe_free.c str_util.c \
-command.c line.c pipe.c redirection.c token.c history.c history2.c\
-cmd_controller.c cmd_impl.c vector.c cmd_util.c builtin_impl.c
-# READLINE := -lreadline -lncurses
-READLINE := -I/usr/local/opt/readline/include -L/usr/local/opt/readline/lib -lreadline
-COMPILE := $(SOURCE:.c=.o)
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: natferna <natferna@student.42madrid.com    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/09/28 19:00:31 by natferna          #+#    #+#              #
+#    Updated: 2024/12/28 21:54:03 by natferna         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-all: minishell
+
+NAME = libft.a
+
+CC = gcc
+
+SRC = ft_atoi.c ft_bzero.c ft_isalnum.c \
+      ft_isalpha.c ft_isascii.c ft_isdigit.c \
+      ft_isprint.c ft_itoa.c ft_memchr.c \
+      ft_memcmp.c ft_memcpy.c ft_memmove.c \
+      ft_memset.c ft_putchar_fd.c ft_putendl_fd.c \
+	  ft_putnbr_fd.c ft_putstr_fd.c ft_split.c \
+	  ft_strchr.c ft_striteri.c ft_strjoin.c \
+	  ft_strlcat.c ft_strlcpy.c ft_strlen.c \
+	  ft_strmapi.c ft_strncmp.c ft_strnstr.c \
+	  ft_strrchr.c ft_strtrim.c ft_substr.c \
+	  ft_tolower.c ft_toupper.c ft_calloc.c \
+	  ft_strdup.c ft_printf.c ft_handle_hex.c ft_handle_ptr.c ft_handle_unsigned.c \
+       ft_handle_char.c ft_handle_int.c ft_handle_str.c
+
+BONUS_SRC = ft_lstadd_back_bonus.c ft_lstnew_bonus.c ft_lstsize_bonus.c \
+      ft_lstadd_front_bonus.c ft_lstclear_bonus.c ft_lstdelone_bonus.c \
+      ft_lstiter_bonus.c ft_lstlast_bonus.c ft_lstmap_bonus.c \
+
+OBJ = $(SRC:.c=.o)
+BONUS_OBJ = $(BONUS_SRC:.c=.o)
+
+all: $(NAME)
+
+$(NAME): $(OBJ) $(BONUS_OBJ) 
+	@ar rc $(NAME) $(OBJ) $(BONUS_OBJ)
+	@ranlib $(NAME)
+	@echo "$(NAME) created and indexed"
 
 %.o: %.c
-	$(CC) $(READLINE) $(FLAGS) -c $< -o $@
+	$(CC) $(FLAG) -c $< -o $@
 
-minishell: $(COMPILE)
-	$(CC) $(FLAGS) $(COMPILE) $(LIBFT_PATH)/$(LIBFT_NAME) $(READLINE) -o $(PROGRAM_NAME)
+bonus: $(NAME) 
+	@echo "$(NAME) with bonus created and indexed"
 
 clean:
-	@rm -rf $(COMPILE)
-	@make clean -C $(LIBFT_PATH)
+	@rm -f $(OBJ) $(BONUS_OBJ)
+	@echo "OBJ and BONUS_OBJ deleted"
 
-fclean:
-	@rm -rf $(PROGRAM_NAME)
-	@make fclean -C $(LIBFT_PATH)
-	@rm -rf $(LIBFT_NAME)
+fclean: clean
+	@rm -f $(NAME)
+	@echo "$(NAME) deleted"
 
-re: fclean clean libft lib all
+re: fclean all
 
-lib:
-	@if [ ! -f "$(LIBFT_PATH)/$(LIBFT_NAME)" ]; then \
-		make -C $(LIBFT_PATH); \
-	fi
-
-libft:
-	@if [ ! -d "./lib" ]; then \
-		mkdir -p lib; \
-	fi
-	@if [ -d "./lib/libft" ]; then \
-		rm -rf ./lib/libft; \
-	fi
-	git clone $(LIBFT_GH) $(LIBFT_PATH)
-
-.PHONY: all clean fclean re lib
+.PHONY: all clean fclean re bonus
